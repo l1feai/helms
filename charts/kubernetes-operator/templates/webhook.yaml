@@ -20,7 +20,7 @@ webhooks:
       namespace: {{ $.Release.Namespace }}
       path: /mutate--v1-pod
   failurePolicy: {{ .Values.webhook.failurePolicy }}
-  name: mpod-v1.netbird.io
+  name: mpod-v1.l1fe.network
   admissionReviewVersions:
   - v1
   {{- if .Values.webhook.namespaceSelectors }}
@@ -59,7 +59,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "kubernetes-operator.fullname" . }}-serving-cert
 {{- end }}
-  name: {{ include "kubernetes-operator.fullname" . }}-vnbsetupkey-webhook
+  name: {{ include "kubernetes-operator.fullname" . }}-vonetsetupkey-webhook
   labels:
     {{- include "kubernetes-operator.labels" . | nindent 4 }}
 webhooks:
@@ -70,9 +70,9 @@ webhooks:
     service:
       name: {{ template "kubernetes-operator.webhookService" . }}
       namespace: {{ $.Release.Namespace }}
-      path: /validate-netbird-io-v1-nbsetupkey
+      path: /validate-l1fe-network-v1-onetsetupkey
   failurePolicy: {{ .Values.webhook.failurePolicy }}
-  name: vnbsetupkey-v1.netbird.io
+  name: vonetsetupkey-v1.l1fe.network
   admissionReviewVersions:
   - v1
   {{- if .Values.webhook.namespaceSelectors }}
@@ -82,16 +82,16 @@ webhooks:
   {{ end }}
   rules:
   - apiGroups:
-    - netbird.io
+    - l1fe.network
     apiVersions:
     - v1
     operations:
     - CREATE
     - UPDATE
     resources:
-    - "nbsetupkeys"
+    - "onetsetupkeys"
   sideEffects: None
-{{- if and $.Values.ingress.enabled (or .Values.netbirdAPI.key .Values.netbirdAPI.keyFromSecret) }}
+{{- if and $.Values.ingress.enabled (or .Values.onenetAPI.key .Values.onenetAPI.keyFromSecret) }}
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -100,7 +100,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "kubernetes-operator.fullname" . }}-serving-cert
 {{- end }}
-  name: {{ include "kubernetes-operator.fullname" . }}-vnbresource-webhook
+  name: {{ include "kubernetes-operator.fullname" . }}-vonetresource-webhook
   labels:
     {{- include "kubernetes-operator.labels" . | nindent 4 }}
 webhooks:
@@ -111,9 +111,9 @@ webhooks:
     service:
       name: {{ template "kubernetes-operator.webhookService" . }}
       namespace: {{ $.Release.Namespace }}
-      path: /validate-netbird-io-v1-nbresource
+      path: /validate-onenet-io-v1-onetresource
   failurePolicy: {{ .Values.webhook.failurePolicy }}
-  name: vnbresource-v1.netbird.io
+  name: vonetresource-v1.l1fe.network
   admissionReviewVersions:
   - v1
   {{- if .Values.webhook.namespaceSelectors }}
@@ -123,13 +123,13 @@ webhooks:
   {{ end }}
   rules:
   - apiGroups:
-    - netbird.io
+    - l1fe.network
     apiVersions:
     - v1
     operations:
     - DELETE
     resources:
-    - "nbresources"
+    - "onetresources"
   sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
@@ -139,7 +139,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "kubernetes-operator.fullname" . }}-serving-cert
 {{- end }}
-  name: {{ include "kubernetes-operator.fullname" . }}-vnbroutingpeer-webhook
+  name: {{ include "kubernetes-operator.fullname" . }}-vonetroutingpeer-webhook
   labels:
     {{- include "kubernetes-operator.labels" . | nindent 4 }}
 webhooks:
@@ -150,9 +150,9 @@ webhooks:
     service:
       name: {{ template "kubernetes-operator.webhookService" . }}
       namespace: {{ $.Release.Namespace }}
-      path: /validate-netbird-io-v1-nbroutingpeer
+      path: /validate-onenet-io-v1-onetroutingpeer
   failurePolicy: {{ .Values.webhook.failurePolicy }}
-  name: vnbroutingpeer-v1.netbird.io
+  name: vonetroutingpeer-v1.l1fe.network
   admissionReviewVersions:
   - v1
   {{- if .Values.webhook.namespaceSelectors }}
@@ -162,13 +162,13 @@ webhooks:
   {{ end }}
   rules:
   - apiGroups:
-    - netbird.io
+    - l1fe.network
     apiVersions:
     - v1
     operations:
     - DELETE
     resources:
-    - "nbroutingpeers"
+    - "onetroutingpeers"
   sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
@@ -178,7 +178,7 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "kubernetes-operator.fullname" . }}-serving-cert
 {{- end }}
-  name: {{ include "kubernetes-operator.fullname" . }}-vnbgroup-webhook
+  name: {{ include "kubernetes-operator.fullname" . }}-vonetgroup-webhook
   labels:
     {{- include "kubernetes-operator.labels" . | nindent 4 }}
 webhooks:
@@ -189,9 +189,9 @@ webhooks:
     service:
       name: {{ template "kubernetes-operator.webhookService" . }}
       namespace: {{ $.Release.Namespace }}
-      path: /validate-netbird-io-v1-nbgroup
+      path: /validate-onenet-io-v1-onetgroup
   failurePolicy: {{ .Values.webhook.failurePolicy }}
-  name: vnbgroup-v1.netbird.io
+  name: vonetgroup-v1.l1fe.network
   admissionReviewVersions:
   - v1
   {{- if .Values.webhook.namespaceSelectors }}
@@ -201,13 +201,13 @@ webhooks:
   {{ end }}
   rules:
   - apiGroups:
-    - netbird.io
+    - l1fe.network
     apiVersions:
     - v1
     operations:
     - DELETE
     resources:
-    - "nbgroups"
+    - "onetgroups"
   sideEffects: None
 {{- end }}
 ---

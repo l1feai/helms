@@ -1,5 +1,5 @@
 clusterSecretsPermissions:
-  # Required for NBSetupKey validation
+  # Required for ONETSetupKey validation
   # Required for Ingress functionality to create and validate secrets for routing peers
   allowAllSecrets: true
 
@@ -43,7 +43,7 @@ operator:
     # Set operator image registry
     registry: docker.io
     # Set operator image repository
-    repository: netbirdio/kubernetes-operator
+    repository: l1feai/kubernetes-operator
     # This sets the pull policy for images.
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
@@ -178,7 +178,7 @@ ingress:
         # annotations: {}
         # nodeSelector: {}
         # tolerations: []
-  # NetBird Policies for use with exposed services
+  # OneNet Policies for use with exposed services
   policies: {}
     # default:
     #   name: Kubernetes Default Policy
@@ -188,14 +188,14 @@ ingress:
 cluster:
   # Cluster DNS name (used for webhooks certificates and for network resource DNS names)
   dns: svc.cluster.local
-  # Cluster name (used for generating network and network resource names in NetBird)
+  # Cluster name (used for generating network and network resource names in OneNet)
   name: kubernetes
 
-netbirdAPI: {}
-  # NetBird Service Account Token
-  # key: "nbp_m0LM9ZZvDUzFO0pY50iChDOTxJgKFM3DIqmZ"
+onenetAPI: {}
+  # OneNet Service Account Token
+  # key: "onetp_m0LM9ZZvDUzFO0pY50iChDOTxJgKFM3DIqmZ"
   #keyFromSecret:
   #  name: "Secret name"
-  #  key: "NB_API_KEY"
+  #  key: "ONET_API_KEY"
   
-#routingClientImage: "netbirdio/netbird:latest"  
+#routingClientImage: "l1feai/onenet:latest"  

@@ -6,35 +6,35 @@ metadata:
     {{- include "kubernetes-operator.labels" . | nindent 4 }}
 rules:
 - apiGroups:
-  - netbird.io
+  - l1fe.network
   resources:
-  - nbsetupkeys
+  - onetsetupkeys
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - netbird.io
+  - l1fe.network
   resources:
-  - nbsetupkeys/finalizers
+  - onetsetupkeys/finalizers
   verbs:
   - update
 - apiGroups:
-  - netbird.io
+  - l1fe.network
   resources:
-  - nbsetupkeys/status
+  - onetsetupkeys/status
   verbs:
   - get
   - patch
   - update
-{{- if or .Values.netbirdAPI.key .Values.netbirdAPI.keyFromSecret }}
+{{- if or .Values.onenetAPI.key .Values.onenetAPI.keyFromSecret }}
 - apiGroups:
-  - netbird.io
+  - l1fe.network
   resources:
-  - nbgroups
-  - nbresources
-  - nbroutingpeers
-  - nbpolicies
+  - onetgroups
+  - onetresources
+  - onetroutingpeers
+  - onetpolicies
   verbs:
   - get
   - patch
@@ -44,23 +44,23 @@ rules:
   - create
   - delete
 - apiGroups:
-  - netbird.io
+  - l1fe.network
   resources:
-  - nbgroups/status
-  - nbresources/status
-  - nbroutingpeers/status
-  - nbpolicies/status
+  - onetgroups/status
+  - onetresources/status
+  - onetroutingpeers/status
+  - onetpolicies/status
   verbs:
   - get
   - patch
   - update
 - apiGroups:
-  - netbird.io
+  - l1fe.network
   resources:
-  - nbgroups/finalizers
-  - nbresources/finalizers
-  - nbroutingpeers/finalizers
-  - nbpolicies/finalizers
+  - onetgroups/finalizers
+  - onetresources/finalizers
+  - onetroutingpeers/finalizers
+  - onetpolicies/finalizers
   verbs:
   - update
 - apiGroups:
@@ -108,7 +108,7 @@ rules:
   - get
   - list
   - watch
-{{- if or (or .Values.netbirdAPI.key .Values.netbirdAPI.keyFromSecret) .Values.clusterSecretsPermissions.allowAllSecrets }}
+{{- if or (or .Values.onenetAPI.key .Values.onenetAPI.keyFromSecret) .Values.clusterSecretsPermissions.allowAllSecrets }}
 - apiGroups:
   - ""
   resources:
@@ -117,7 +117,7 @@ rules:
   - get
   - list
   - watch
-{{- if or .Values.netbirdAPI.key .Values.netbirdAPI.keyFromSecret }}
+{{- if or .Values.onenetAPI.key .Values.onenetAPI.keyFromSecret }}
   - patch
   - update
   - create

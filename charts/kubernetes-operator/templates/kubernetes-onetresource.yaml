@@ -1,0 +1,71 @@
+{{- if and .Values.ingress.enabled .Values.ingress.kubernetesAPI.enabled }}
+{{- $routerNS := .Release.Namespace }}
+{{- if .Values.ingress.namespacedNetworks }}
+{{- $routerNS = "default" }}
+{{- end }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "kubernetes-operator.fullname" . }}-kubernetes-service-expose
+  labels:
+    app.kubernetes.io/component: operator
+    {{- include "kubernetes-operator.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-upgrade,post-install
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      name: {{ include "kubernetes-operator.fullname" . }}
+      labels:
+        app.kubernetes.io/component: operator
+        {{- include "kubernetes-operator.labels" . | nindent 8 }}
+        {{- with .Values.operator.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      initContainers:
+      - name: wait-network-ready
+        image: {{ .Values.ingress.kubernetesAPI.customKubectlImage | default "registry.suse.com/suse/kubectl:latest"}}
+        command:
+        - bash
+        - -c
+        args:
+        - kubectl wait --for 'jsonpath={.status.networkID}' -n {{ $routerNS }} onetroutingpeer router; 
+      containers:
+      - name: apply-onetresource
+        image: {{ .Values.ingress.kubernetesAPI.customKubectlImage | default "registry.suse.com/suse/kubectl:latest"}}
+        env:
+        - name: ONETRESOURCE_VALUE
+          value: |
+            apiVersion: l1fe.network/v1
+            kind: ONETResource
+            metadata:
+              finalizers:
+              - l1fe.network/cleanup
+              name: kubernetes
+              namespace: default
+            spec:
+              address: kubernetes.default.{{.Values.cluster.dns}}
+              groups:
+              {{- if .Values.ingress.kubernetesAPI.groups }}
+              {{ toYaml .Values.ingress.kubernetesAPI.groups }}
+              {{- else }}
+              - {{ .Values.cluster.name }}-default-api-access
+              {{- end }}
+              name: {{ .Values.ingress.kubernetesAPI.resourceName | default "default-kubernetes-api" }}
+              networkID: ${NETWORK_ID}
+              {{- if .Values.ingress.kubernetesAPI.policies }}
+              policyName: "{{ join "," .Values.ingress.kubernetesAPI.policies }}"
+              {{- end }}
+              tcpPorts:
+              - 443
+        command:
+        - bash
+        - -c
+        args:
+        - kubectl delete ONETResource --ignore-not-found -n default kubernetes; export NETWORK_ID=$(kubectl get ONETRoutingPeer -n {{ $routerNS }} router -o 'jsonpath={.status.networkID}'); echo "$ONETRESOURCE_VALUE" | envsubst | kubectl apply -f -
+      serviceAccountName: {{ include "kubernetes-operator.serviceAccountName" . }}
+      restartPolicy: Never
+{{- end }}

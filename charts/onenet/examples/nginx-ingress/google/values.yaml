@@ -1,0 +1,254 @@
+fullnameOverride: onenet
+management:
+  configmap: |-
+    {
+      "Stuns": [
+        {
+          "Proto": "udp",
+          "URI": "{{ .STUN_SERVER }}",
+          "Username": "",
+          "Password": null
+        }
+      ],
+      "Relay": {
+        "Addresses": ["rels://onenet.example.com:443/relay"],
+        "CredentialsTTL": "24h",
+        "Secret": "{{ .RELAY_PASSWORD }}"
+      },
+      "TURNConfig": {
+        "Turns": [
+          {
+            "Proto": "udp",
+            "URI": "{{ .TURN_SERVER }}",
+            "Username": "{{ .TURN_SERVER_USER }}",
+            "Password": "{{ .TURN_SERVER_PASSWORD }}"
+          }
+        ],
+        "CredentialsTTL": "12h",
+        "Secret": "secret",
+        "TimeBasedCredentials": false
+      },
+      "Signal": {
+        "Proto": "https",
+        "URI": "onenet.example.com:443",
+        "Username": "",
+        "Password": null
+      },
+      "ReverseProxy": {
+        "TrustedHTTPProxies": [],
+        "TrustedHTTPProxiesCount": 0,
+        "TrustedPeers": ["0.0.0.0/0"]
+      },
+      "Datadir": "/var/lib/onenet/",
+      "DataStoreEncryptionKey": "{{ .DATASTORE_ENCRYPTION_KEY }}",
+      "StoreConfig": {
+        "Engine": "sqlite"
+      },
+      "HttpConfig": {
+        "Address": "0.0.0.0:33073",
+        "AuthIssuer": "https://accounts.google.com",
+        "AuthAudience": "{{ .IDP_CLIENT_ID }}",
+        "AuthKeysLocation": "https://www.googleapis.com/oauth2/v3/certs",
+        "AuthUserIDClaim": "",
+        "CertFile": "",
+        "CertKey": "",
+        "IdpSignKeyRefreshEnabled": true,
+        "OIDCConfigEndpoint": "https://accounts.google.com/.well-known/openid-configuration"
+      },
+      "IdpManagerConfig": {
+        "ManagerType": "google",
+        "ClientConfig": {
+          "Issuer": "https://accounts.google.com",
+          "TokenEndpoint": "https://oauth2.googleapis.com/token",
+          "ClientID": "",
+          "ClientSecret": "",
+          "GrantType": "client_credentials"
+        },
+        "ExtraConfig": {
+          "CustomerId": "{{ .CUSTOMER_ID }}",
+          "ServiceAccountKey": "{{ .SERVICE_ACCOUNT_KEY }}"
+        },
+        "Auth0ClientCredentials": null,
+        "AzureClientCredentials": null,
+        "KeycloakClientCredentials": null,
+        "ZitadelClientCredentials": null
+      },
+      "DeviceAuthorizationFlow": {
+        "Provider": "hosted",
+        "ProviderConfig": {
+          "Audience": "{{ .IDP_CLIENT_ID }}",
+          "AuthorizationEndpoint": "",
+          "Domain": "",
+          "ClientID": "",
+          "ClientSecret": "",
+          "TokenEndpoint":  "https://oauth2.googleapis.com/token",
+          "DeviceAuthEndpoint": "https://oauth2.googleapis.com/device/code",
+          "Scope": "openid",
+          "UseIDToken": true,
+          "RedirectURLs": null
+        }
+      },
+      "PKCEAuthorizationFlow": {
+        "ProviderConfig": {
+          "Audience": "{{ .IDP_CLIENT_ID }}",
+          "ClientID": "{{ .IDP_CLIENT_ID }}",
+          "ClientSecret": "{{ .IDP_CLIENT_SECRET }}",
+          "Domain": "",
+          "AuthorizationEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+          "TokenEndpoint": "https://oauth2.googleapis.com/token",
+          "Scope": "openid profile email",
+          "RedirectURLs": ["http://localhost:53000"],
+          "UseIDToken": true
+        }
+      }
+    }
+
+
+  envFromSecret:
+    STUN_SERVER: onenet/stunServer
+    TURN_SERVER: onenet/turnServer
+    TURN_SERVER_USER: onenet/turnServerUser
+    TURN_SERVER_PASSWORD: onenet/turnServerPassword
+    RELAY_PASSWORD: onenet/relayPassword
+    IDP_CLIENT_ID: onenet/idpClientID
+    IDP_CLIENT_SECRET: onenet/idpClientSecret
+    DATASTORE_ENCRYPTION_KEY: onenet/datastoreEncryptionKey
+    SERVICE_ACCOUNT_KEY: onenet-gcp-service-account/sa.json
+    CUSTOMER_ID: onenet/customerID
+
+  podCommand:
+    args:
+      - --port=80
+      - --log-file=console
+      - --log-level=error
+      - --disable-anonymous-metrics=false
+      - --dns-domain=onenet.selfhosted"
+
+  image:
+    tag: 0.36.5
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: onenet.example.com
+        paths:
+          - path: /api
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: onenet-api-tls
+        hosts:
+          - onenet.example.com
+  ingressGrpc:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/backend-protocol: GRPC
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    hosts:
+      - host: onenet.example.com
+        paths:
+          - path: /management.ManagementService
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: onenet-grpc-tls
+        hosts:
+          - onenet.example.com
+  persistentVolume:
+    enabled: true
+  useBackwardsGrpcService: true
+signal:
+  image:
+    tag: 0.36.5
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/backend-protocol: GRPC
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    hosts:
+      - host: onenet.example.com
+        paths:
+          - path: /signalexchange.SignalExchange
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: onenet-signal-tls
+        hosts:
+          - onenet.example.com
+relay:
+  resources:
+    requests:
+      cpu: 300m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 256Mi
+  image:
+    tag: 0.36.5
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: onenet.example.com
+        paths:
+          - path: /relay
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: onenet-relay-tls
+        hosts:
+          - onenet.example.com
+
+  envFromSecret:
+    ONET_AUTH_SECRET: onenet/relayPassword
+
+  env:
+    ONET_LOG_LEVEL: info
+    ONET_LISTEN_ADDRESS: ":33080"
+    ONET_EXPOSED_ADDRESS: rels://onenet.example.com:443/relay
+
+dashboard:
+  enabled: true
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: onenet-dashboard.example.com
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: onenet-dashboard-tls
+        hosts:
+          - onenet-dashboard.example.com
+  image:
+    tag: v2.9.0
+  env:
+    # Endpoints
+    ONENET_MGMT_API_ENDPOINT: https://onenet.example.com:443
+    ONENET_MGMT_GRPC_API_ENDPOINT: https://onenet.example.com:443
+    # OIDC
+    AUTH_AUTHORITY: https://accounts.google.com
+    USE_AUTH0: "false"
+    AUTH_SUPPORTED_SCOPES: "openid profile email"
+    AUTH_REDIRECT_URI: /auth
+    AUTH_SILENT_REDIRECT_URI: /silent-auth
+    ONENET_TOKEN_SOURCE: idToken
+    NGINX_SSL_PORT: "443"
+    LETSENCRYPT_DOMAIN:
+    LETSENCRYPT_EMAIL:
+  envFromSecret:
+    AUTH_AUDIENCE: onenet/idpClientID
+    AUTH_CLIENT_ID: onenet/idpClientID
+    AUTH_CLIENT_SECRET: onenet/idpClientSecret

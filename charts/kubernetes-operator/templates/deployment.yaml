@@ -46,7 +46,7 @@ spec:
           - --health-probe-bind-address=:{{ .Values.operator.livenessProbe.port }}
           - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
           {{- if .Values.managementURL }}
-          - --netbird-management-url={{.Values.managementURL}}
+          - --onenet-management-url={{.Values.managementURL}}
           {{- end }}
           {{- if .Values.cluster.name }}
           - --cluster-name={{.Values.cluster.name}}
@@ -57,14 +57,14 @@ spec:
           {{- if .Values.cluster.dns }}
           - --cluster-dns={{.Values.cluster.dns}}
           {{- end }}
-          {{- if or .Values.netbirdAPI.key .Values.netbirdAPI.keyFromSecret }}
-          - --netbird-api-key=$(NB_API_KEY)
+          {{- if or .Values.onenetAPI.key .Values.onenetAPI.keyFromSecret }}
+          - --onenet-api-key=$(ONET_API_KEY)
           {{- end }}
           {{- if .Values.ingress.allowAutomaticPolicyCreation }}
           - --allow-automatic-policy-creation
           {{- end }}
           {{- if .Values.routingClientImage }}
-          - --netbird-client-image={{.Values.routingClientImage}}
+          - --onenet-client-image={{.Values.routingClientImage}}
           {{- end }}
           ports:
             - name: webhook-server
@@ -80,17 +80,17 @@ spec:
             periodSeconds: {{ .Values.operator.livenessProbe.periodSeconds }}
             successThreshold: {{ .Values.operator.livenessProbe.successThreshold }}
             timeoutSeconds: {{ .Values.operator.livenessProbe.timeoutSeconds }}
-          {{- if or .Values.netbirdAPI.key .Values.netbirdAPI.keyFromSecret }}
+          {{- if or .Values.onenetAPI.key .Values.onenetAPI.keyFromSecret }}
           env:
-            - name: NB_API_KEY
+            - name: ONET_API_KEY
               valueFrom:
                 secretKeyRef:
-                  {{- if .Values.netbirdAPI.keyFromSecret }}
-                  name: {{ .Values.netbirdAPI.keyFromSecret.name }}
-                  key: {{ .Values.netbirdAPI.keyFromSecret.key }}
+                  {{- if .Values.onenetAPI.keyFromSecret }}
+                  name: {{ .Values.onenetAPI.keyFromSecret.name }}
+                  key: {{ .Values.onenetAPI.keyFromSecret.key }}
                   {{- else }}
                   name: {{ include "kubernetes-operator.fullname" . }}
-                  key: NB_API_KEY
+                  key: ONET_API_KEY
                   {{- end }}
           {{- end }}
           readinessProbe:

@@ -29,7 +29,7 @@ spec:
         - -A
         - --cascade=foreground
         - --ignore-not-found
-        - NBRoutingPeer
+        - ONETRoutingPeer
       serviceAccountName: {{ include "kubernetes-operator.serviceAccountName" . }}
       restartPolicy: Never
 ---
@@ -63,7 +63,7 @@ spec:
         - --all
         - --cascade=foreground
         - --ignore-not-found
-        - NBPolicy
+        - ONETPolicy
       serviceAccountName: {{ include "kubernetes-operator.serviceAccountName" . }}
       restartPolicy: Never
 ---
